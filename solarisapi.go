@@ -3,13 +3,10 @@ package solarisapi
 import (
 	"crypto/tls"
 	"encoding/json"
-	"errors"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"regexp"
-	"strconv"
-	"strings"
 	"time"
 )
 
@@ -92,9 +89,7 @@ type ProductDetails struct {
 }
 
 const api = "https://json.solarisjapan.com/products/"
-const currAPIURL = "https://cdn.shopify.com/s/javascripts/currencies.js"
 
-var reCurr = regexp.MustCompile(`(\w+):(\d*\.*\d+)`)
 var reHandle = regexp.MustCompile(`https://solarisjapan\.com.*/products/(.+)`)
 
 // GetItemByURL and return it's data as a struct
@@ -117,32 +112,6 @@ func GetItemByHandle(handle string) (ProductDetails, error) {
 	}
 
 	return productDetails, nil
-}
-
-// GetCurrencies rates of the important currencies
-func GetCurrencies() (map[string]float64, error) {
-
-	data, err := get(currAPIURL)
-	if err != nil {
-		return nil, err
-	}
-
-	matchedCurr := reCurr.FindAllStringSubmatch(string(data), -1) //1=currencyKey 2=qouta
-	if len(matchedCurr) < 1 {
-		return nil, errors.New("no currencies found")
-	}
-
-	currencies := map[string]float64{}
-	for _, match := range matchedCurr {
-		currRate := parseCurrencyRate(match[2])
-		if currRate == 0 {
-			continue
-		}
-
-		currencies[match[1]] = currRate
-	}
-
-	return currencies, nil
 }
 
 // ParseHandleFromURL thats needed for the API request
@@ -188,17 +157,4 @@ func get(URL string) ([]byte, error) {
 
 	return body, nil
 
-}
-
-func parseCurrencyRate(rate string) float64 {
-	if strings.HasPrefix(rate, ".") {
-		rate = "0" + rate
-	}
-
-	currRate, err := strconv.ParseFloat(rate, 64)
-	if err != nil {
-		return 0
-	}
-
-	return currRate
 }
