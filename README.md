@@ -1,4 +1,5 @@
 [![Go](https://github.com/Stegosawr/solarisapi/actions/workflows/go.yml/badge.svg)](https://github.com/Stegosawr/solarisapi/actions/workflows/go.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/Stegosawr/solarisapi)](https://goreportcard.com/report/github.com/Stegosawr/solarisapi)
 
 # solarisapi
 Api for products at solarisjapan.com

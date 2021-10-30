@@ -13,6 +13,7 @@ import (
 	"time"
 )
 
+// ProductDetails of solarisjapan.com product
 type ProductDetails struct {
 	Product struct {
 		ID                int64       `json:"id"`
