@@ -1,3 +1,3 @@
-module github.com/stegosawr/solarisapi
+module github.com/Stegosawr/solarisapi
 
 go 1.17
