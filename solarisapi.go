@@ -88,7 +88,7 @@ type ProductDetails struct {
 	} `json:"product"`
 }
 
-const api = "https://json.solarisjapan.com/products/"
+const api = "https://solarisjapan.com/products/"
 
 var reHandle = regexp.MustCompile(`https://solarisjapan\.com.*/products/(.+)`)
 
@@ -100,7 +100,7 @@ func GetItemByURL(URL string) (ProductDetails, error) {
 // GetItemByHandle and return it's data as a struct
 func GetItemByHandle(handle string) (ProductDetails, error) {
 
-	data, err := get(api + handle)
+	data, err := get(api + handle + ".json")
 	if err != nil {
 		return ProductDetails{}, err
 	}
