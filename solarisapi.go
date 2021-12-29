@@ -13,20 +13,21 @@ import (
 // ProductDetails of solarisjapan.com product
 type ProductDetails struct {
 	Product struct {
-		ID                int64       `json:"id"`
-		Title             string      `json:"title"`
-		BodyHTML          string      `json:"body_html"`
-		Vendor            string      `json:"vendor"`
-		ProductType       string      `json:"product_type"`
-		CreatedAt         time.Time   `json:"created_at"`
-		Handle            string      `json:"handle"`
-		UpdatedAt         time.Time   `json:"updated_at"`
-		PublishedAt       time.Time   `json:"published_at"`
-		TemplateSuffix    interface{} `json:"template_suffix"`
-		Status            string      `json:"status"`
-		PublishedScope    string      `json:"published_scope"`
-		Tags              string      `json:"tags"`
-		AdminGraphqlAPIID string      `json:"admin_graphql_api_id"`
+		ID                int64             `json:"id"`
+		Title             string            `json:"title"`
+		BodyHTML          string            `json:"body_html"`
+		Vendor            string            `json:"vendor"`
+		ProductType       string            `json:"product_type"`
+		CreatedAt         time.Time         `json:"created_at"`
+		Handle            string            `json:"handle"`
+		UpdatedAt         time.Time         `json:"updated_at"`
+		PublishedAt       time.Time         `json:"published_at"`
+		TemplateSuffix    interface{}       `json:"template_suffix"`
+		Status            string            `json:"status"`
+		PublishedScope    string            `json:"published_scope"`
+		Tags              string            `json:"tags"`
+		AdminGraphqlAPIID string            `json:"admin_graphql_api_id"`
+		Info              map[string]string `json:"info"`
 		Variants          []struct {
 			ID                   int64       `json:"id"`
 			Title                string      `json:"title"`
@@ -92,6 +93,9 @@ const api = "https://solarisjapan.com/products/"
 
 var reHandle = regexp.MustCompile(`https://solarisjapan\.com.*/products/(.+)`)
 
+// reProductInfo finds product information that is supplied by solarisjapan only and it cannot be obtained via shopify
+var reProductInfo = regexp.MustCompile(`<strong> ([^:]+): </strong>\s+<span[^>]*>([^<]+)`) //1=Keyword 2=Info -> 1=Dimensions 2=330.0 mm
+
 // GetItemByURL and return it's data as a struct
 func GetItemByURL(URL string) (ProductDetails, error) {
 	return GetItemByHandle(ParseHandleFromURL(URL))
@@ -100,7 +104,9 @@ func GetItemByURL(URL string) (ProductDetails, error) {
 // GetItemByHandle and return it's data as a struct
 func GetItemByHandle(handle string) (ProductDetails, error) {
 
-	data, err := get(api + handle + ".json")
+	productURL := api + handle
+
+	data, err := get(productURL + ".json")
 	if err != nil {
 		return ProductDetails{}, err
 	}
@@ -109,6 +115,22 @@ func GetItemByHandle(handle string) (ProductDetails, error) {
 	err = json.Unmarshal(data, &productDetails)
 	if err != nil {
 		return ProductDetails{}, err
+	}
+
+	productHTML, err := get(productURL)
+	if err != nil {
+		return ProductDetails{}, err
+	}
+
+	matchedProductInfo := reProductInfo.FindAllSubmatch(productHTML, -1)
+	if len(matchedProductInfo) < 1 {
+		// no additional product info found
+		return productDetails, nil
+	}
+
+	productDetails.Product.Info = make(map[string]string, len(matchedProductInfo))
+	for _, match := range matchedProductInfo {
+		productDetails.Product.Info[string(match[1])] = string(match[2])
 	}
 
 	return productDetails, nil
