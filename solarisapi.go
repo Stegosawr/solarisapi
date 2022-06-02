@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"regexp"
 	"time"
@@ -91,7 +90,7 @@ type ProductDetails struct {
 
 const api = "https://solarisjapan.com/products/"
 
-var reHandle = regexp.MustCompile(`https://solarisjapan\.com.*/products/(.+)`)
+var reHandle = regexp.MustCompile(`https://solarisjapan\.com.*/products/([^?]+)`)
 
 // reProductInfo finds product information that is supplied by solarisjapan only and it cannot be obtained via shopify
 var reProductInfo = regexp.MustCompile(`<strong> ([^:]+): </strong>\s+<span[^>]*>([^<]+)`) //1=Keyword 2=Info -> 1=Dimensions 2=330.0 mm
@@ -170,7 +169,7 @@ func get(URL string) ([]byte, error) {
 
 	defer res.Body.Close()
 
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		if err != io.ErrUnexpectedEOF {
 			return nil, err
